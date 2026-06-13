@@ -22,7 +22,7 @@ services:
     env_file:
       - .env
     environment:
-      MONGODB_URI: mongodb://mongodb:27017/lumiere
+      MONGODB_URI: mongodb+srv://Harmi:Harmiai@cluster0.v3vbitv.mongodb.net/restaurant_ar_menu?retryWrites=true&w=majority&appName=Cluster0
     depends_on:
       mongodb:
         condition: service_healthy

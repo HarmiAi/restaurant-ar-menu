@@ -20,6 +20,10 @@ export async function connectDB(): Promise<void> {
     serverSelectionTimeoutMS: 8000,
     socketTimeoutMS: 45000,
   })
+
+  console.log("Using Mongo URI:", env.MONGODB_URI)
+console.log("Connected Database:", mongoose.connection.name)
+
   isConnected = true
 }
 

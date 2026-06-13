@@ -4,13 +4,19 @@ import { fileURLToPath } from 'url'
 import { z } from 'zod'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
-dotenv.config({ path: path.resolve(__dirname, '../../.env') })
+// dotenv.config({ path: path.resolve(__dirname, '../../../.env') })
+
+dotenv.config({
+  path: path.resolve(__dirname, '../../.env'),
+  override: true,
+})
+
+console.log("ENV FILE MONGODB:", process.env.MONGODB_URI)
 
 const envSchema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(4000),
-  MONGODB_URI: z.string().default('mongodb://localhost:27017/lumiere'),
+MONGODB_URI: z.string(),
   JWT_SECRET: z.string().min(16).default('dev-secret-change-in-production'),
   JWT_EXPIRES_IN: z.string().default('7d'),
   FRONTEND_URL: z.string().default('http://localhost:5173'),
