@@ -1,0 +1,42 @@
+{
+  "name": "restorant-vr-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "npm run dev --prefix backend",
+    "build": "tsc --noEmit && vite build",
+    "build:api": "npm run build --prefix backend",
+    "build:all": "npm run build:api && npm run build",
+    "preview": "vite preview",
+    "seed": "npm run seed --prefix backend",
+    "setup": "powershell -ExecutionPolicy Bypass -File scripts/setup.ps1",
+    "setup:mongo": "docker compose up -d mongodb",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.184.1",
+    "@vitejs/plugin-react": "^6.0.2",
+    "tailwindcss": "^4.3.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.0.12"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@react-three/xr": "^6.6.30",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.17.0",
+    "qrcode.react": "^4.2.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "react-router-dom": "^7.17.0",
+    "three": "^0.184.0",
+    "zustand": "^5.0.14"
+  }
+}
