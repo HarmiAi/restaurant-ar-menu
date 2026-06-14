@@ -1,3 +1,12 @@
+process.on('uncaughtException', (err) => {
+  console.error('❌ Uncaught Exception:', err)
+  process.exit(1)
+})
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason)
+})
+
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -7,6 +16,7 @@ import rateLimit from 'express-rate-limit'
 import { connectDB, getDbStatus } from './config/db.js'
 import { env } from './config/env.js'
 import { errorHandler } from './middleware/errorHandler.js'
+
 
 import authRoutes from './routes/auth.js'
 import restaurantRoutes from './routes/restaurants.js'
@@ -22,8 +32,21 @@ const app = express()
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(compression())
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'))
+const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173']
+if (env.FRONTEND_URL) {
+  const splitOrigins = env.FRONTEND_URL.split(',').map((o) => o.trim())
+  allowedOrigins.push(...splitOrigins)
+}
+
 app.use(cors({
-  origin: [env.FRONTEND_URL, 'http://localhost:5173', 'http://127.0.0.1:5173'],
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true)
+    if (allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
   credentials: true,
 }))
 app.use(express.json({ limit: '2mb' }))
@@ -39,6 +62,17 @@ app.get('/health', (_req, res) => {
     status: db === 'connected' ? 'ok' : 'degraded',
     database: db,
     version: '1.0.0',
+  })
+})
+
+app.get('/api/status', (_req, res) => {
+  const db = getDbStatus()
+  res.status(db === 'connected' ? 200 : 503).json({
+    status: db === 'connected' ? 'ok' : 'degraded',
+    database: db,
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    env: env.NODE_ENV,
   })
 })
 

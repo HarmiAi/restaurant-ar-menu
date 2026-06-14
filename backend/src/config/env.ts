@@ -32,4 +32,20 @@ MONGODB_URI: z.string(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
 })
 
-export const env = envSchema.parse(process.env)
+let parsedEnv;
+try {
+  parsedEnv = envSchema.parse(process.env)
+} catch (err) {
+  if (err instanceof z.ZodError) {
+    console.error('❌ Environment validation failed:')
+    err.errors.forEach((e) => {
+      console.error(`   - ${e.path.join('.')}: ${e.message}`)
+    })
+  } else {
+    console.error('❌ Environment validation error:', err)
+  }
+  process.exit(1)
+}
+
+export const env = parsedEnv
+

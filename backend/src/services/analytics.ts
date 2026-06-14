@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { AnalyticsEvent, type AnalyticsEventType } from '../models/AnalyticsEvent.js'
 import { Dish } from '../models/Dish.js'
 import { Order } from '../models/Order.js'
@@ -43,13 +44,13 @@ export async function getDashboardAnalytics(restaurantId: string, days = 30) {
     conversions,
   ] = await Promise.all([
     AnalyticsEvent.aggregate([
-      { $match: { restaurantId: restaurantId as unknown as import('mongoose').Types.ObjectId, createdAt: { $gte: since } } },
+      { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId), createdAt: { $gte: since } } },
       { $group: { _id: '$eventType', count: { $sum: 1 } } },
     ]),
     Dish.find({ restaurantId }).sort({ viewCount: -1 }).limit(5).select('name viewCount imageUrl'),
     Dish.find({ restaurantId }).sort({ orderCount: -1 }).limit(5).select('name orderCount imageUrl'),
     Order.aggregate([
-      { $match: { restaurantId: restaurantId as unknown as import('mongoose').Types.ObjectId, paymentStatus: 'paid', createdAt: { $gte: since } } },
+      { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId), paymentStatus: 'paid', createdAt: { $gte: since } } },
       { $group: { _id: null, total: { $sum: '$total' }, count: { $sum: 1 } } },
     ]),
     AnalyticsEvent.countDocuments({ restaurantId, eventType: 'qr_scan', createdAt: { $gte: since } }),
@@ -59,7 +60,7 @@ export async function getDashboardAnalytics(restaurantId: string, days = 30) {
       createdAt: { $gte: since },
     }),
     AnalyticsEvent.aggregate([
-      { $match: { restaurantId: restaurantId as unknown as import('mongoose').Types.ObjectId, createdAt: { $gte: since } } },
+      { $match: { restaurantId: new mongoose.Types.ObjectId(restaurantId), createdAt: { $gte: since } } },
       {
         $group: {
           _id: '$sessionId',
