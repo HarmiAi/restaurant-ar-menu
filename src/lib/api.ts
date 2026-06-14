@@ -97,6 +97,10 @@ class ApiClient {
     return this.request(`/orders/public/${slug}/${orderNumber}`)
   }
 
+  getOrders(restaurantId: string) {
+    return this.request<any[]>(`/orders/${restaurantId}`)
+  }
+
   // AI
   generateDescription(restaurantId: string, dishName: string, ingredients?: string) {
     return this.request<{ description: string }>(`/ai/${restaurantId}/description`, {

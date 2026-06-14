@@ -32,16 +32,21 @@ const app = express()
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
 app.use(compression())
 app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'))
-const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173']
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'https://restaurant-ar-menu-fawn.vercel.app',
+]
 if (env.FRONTEND_URL) {
-  const splitOrigins = env.FRONTEND_URL.split(',').map((o) => o.trim())
+  const splitOrigins = env.FRONTEND_URL.split(',').map((o) => o.trim().replace(/\/$/, ''))
   allowedOrigins.push(...splitOrigins)
 }
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin) || env.NODE_ENV !== 'production') {
+    const sanitizedOrigin = origin.replace(/\/$/, '')
+    if (allowedOrigins.includes(sanitizedOrigin) || env.NODE_ENV !== 'production') {
       callback(null, true)
     } else {
       callback(new Error('Not allowed by CORS'))

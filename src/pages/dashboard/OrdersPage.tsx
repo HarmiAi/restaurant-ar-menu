@@ -29,11 +29,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     if (!restaurant) return
-    const token = api.getToken()
-    fetch(`${import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'}/orders/${restaurant._id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then((r) => r.json())
+    api.getOrders(restaurant._id)
       .then(setOrders)
       .catch(() => {})
   }, [restaurant])
