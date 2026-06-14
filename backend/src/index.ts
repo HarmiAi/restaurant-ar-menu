@@ -85,6 +85,24 @@ app.use('/api/analytics', analyticsRoutes)
 app.use('/api/ai', aiRoutes)
 app.use('/api/uploads', uploadRoutes)
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Lumiere API is running successfully 🚀",
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "Server is healthy",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use(errorHandler)
 
 async function start() {
