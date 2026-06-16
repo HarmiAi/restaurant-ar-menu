@@ -379,13 +379,14 @@ function LegacyARViewer({ item, onPlaced }: ARViewerProps) {
         )}
 
         {!isPresenting && supportState === 'unsupported' && (
-          <button
-            onClick={() => void startAR()}
-            className="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-xl border border-[var(--color-gold)]/25 bg-[var(--color-gold)]/10 py-3 text-sm font-semibold text-[var(--color-gold-light)]"
-          >
-            <Smartphone size={16} />
-            Open Native AR
-          </button>
+          <div className="rounded-lg border border-[var(--color-gold)]/25 bg-[var(--color-gold)]/5 p-4 text-center backdrop-blur-sm pointer-events-auto">
+            <p className="text-xs text-[var(--color-gold-light)] font-medium">
+              AR is not supported on this browser/device for preview models.
+            </p>
+            <p className="mt-1 text-[10px] text-white/50">
+              Please open this page in Android Chrome, or upload a custom GLB/USDZ model in the dashboard to view in AR on iOS.
+            </p>
+          </div>
         )}
 
         {error && (
