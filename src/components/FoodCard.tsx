@@ -17,6 +17,10 @@ export default function FoodCard({ item, index, basePath = '' }: FoodCardProps) 
   const addToCart = useStore((s) => s.addToCart)
   const setSelectedItem = useStore((s) => s.setSelectedItem)
 
+  const isChefPick = item.featured
+  const isPopular = !isChefPick && (item.name.length % 3 === 0)
+  const isTrending = !isChefPick && !isPopular && (item.name.length % 3 === 1)
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -40,10 +44,22 @@ export default function FoodCard({ item, index, basePath = '' }: FoodCardProps) 
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
 
-        {item.featured && (
+        {isChefPick && (
           <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-gold)]/20 backdrop-blur-sm border border-[var(--color-gold)]/30 text-[10px] font-medium text-[var(--color-gold-light)] uppercase tracking-wider">
             <Sparkles size={10} />
             Chef&apos;s Pick
+          </div>
+        )}
+
+        {isPopular && (
+          <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/20 backdrop-blur-sm border border-red-500/30 text-[10px] font-medium text-red-300 uppercase tracking-wider">
+            Popular
+          </div>
+        )}
+
+        {isTrending && (
+          <div className="absolute top-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/20 backdrop-blur-sm border border-blue-500/30 text-[10px] font-medium text-blue-300 uppercase tracking-wider">
+            Trending
           </div>
         )}
 

@@ -21,6 +21,10 @@ export interface FoodItem {
   calories?: number
   prepTime?: string
   featured?: boolean
+  width?: number
+  height?: number
+  depth?: number
+  unit?: string
 }
 
 export interface CartItem {

@@ -1,8 +1,8 @@
 import mongoose, { Schema, type Document } from 'mongoose'
-
+ 
 export type ModelType =
   | 'pizza' | 'burger' | 'pasta' | 'sandwich' | 'biryani' | 'dessert' | 'drinks' | 'custom'
-
+ 
 export interface IDish extends Document {
   restaurantId: mongoose.Types.ObjectId
   categoryId: mongoose.Types.ObjectId
@@ -24,10 +24,14 @@ export interface IDish extends Document {
   arViewCount: number
   tags: string[]
   sortOrder: number
+  width?: number
+  height?: number
+  depth?: number
+  unit?: string
   createdAt: Date
   updatedAt: Date
 }
-
+ 
 const dishSchema = new Schema<IDish>(
   {
     restaurantId: { type: Schema.Types.ObjectId, ref: 'Restaurant', required: true, index: true },
@@ -54,13 +58,17 @@ const dishSchema = new Schema<IDish>(
     arViewCount: { type: Number, default: 0 },
     tags: [String],
     sortOrder: { type: Number, default: 0 },
+    width: Number,
+    height: Number,
+    depth: Number,
+    unit: { type: String, default: 'cm' },
   },
   { timestamps: true },
 )
-
+ 
 dishSchema.index({ restaurantId: 1, categoryId: 1 })
 dishSchema.index({ restaurantId: 1, featured: 1 })
 dishSchema.index({ restaurantId: 1, viewCount: -1 })
 dishSchema.index({ restaurantId: 1, orderCount: -1 })
-
+ 
 export const Dish = mongoose.model<IDish>('Dish', dishSchema)

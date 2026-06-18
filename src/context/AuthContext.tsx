@@ -13,6 +13,9 @@ interface Restaurant {
   _id: string
   name: string
   slug: string
+  currency?: string
+  whatsappNumber?: string
+  tagline?: string
 }
 
 interface AuthContextValue {

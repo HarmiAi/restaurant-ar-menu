@@ -17,22 +17,28 @@ export function buildWhatsAppOrderUrl(
   cart: CartItem[],
   config: RestaurantConfig,
   tableNumber?: string,
+  customerName?: string,
   overridePhone?: string,
 ): string | null {
   const phone = normalizeWhatsAppNumber(overridePhone ?? config.whatsappNumber)
   if (!phone) return null
 
   const lines = [
-    `🍽️ *${config.name} — New Order*`,
-    ...(tableNumber ? [`📍 Table: ${tableNumber}`, ''] : []),
+    `🍽 New Order`,
+    '',
+    `*Customer:* ${customerName || 'Guest'}`,
+    '',
+    `*Table:* ${tableNumber || 'Takeaway'}`,
+    '',
+    `*Items:*`,
     ...cart.map(
       ({ item, quantity }) =>
-        `• ${item.name} x${quantity} — ${config.currency}${item.price * quantity}`,
+        `• ${item.name} x${quantity}`,
     ),
     '',
-    `*Total: ${config.currency}${cart.reduce((sum, { item, quantity }) => sum + item.price * quantity, 0)}*`,
+    `*Total:* ${config.currency}${cart.reduce((sum, { item, quantity }) => sum + item.price * quantity, 0)}`,
     '',
-    'Ordered via AR Menu',
+    `Please confirm my order.`,
   ]
 
   const text = encodeURIComponent(lines.join('\n'))

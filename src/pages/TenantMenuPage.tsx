@@ -33,6 +33,14 @@ function TenantMenuContent() {
     })
   }, [restaurant, applyBranding, updateConfig])
 
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search)
+    const table = searchParams.get('table')
+    if (table) {
+      sessionStorage.setItem('restaurant_table_number', table)
+    }
+  }, [])
+
   const mappedDishes: FoodItem[] = useMemo(() => {
     if (dishes.length > 0) {
       return dishes.map((d) => ({

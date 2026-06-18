@@ -101,6 +101,56 @@ class ApiClient {
     return this.request<any[]>(`/orders/${restaurantId}`)
   }
 
+  // Dashboard CRUD - Dishes
+  getDishesAdmin(restaurantId: string) {
+    return this.request<DishPublic[]>(`/dishes/${restaurantId}`)
+  }
+
+  createDishAdmin(restaurantId: string, data: Partial<DishPublic>) {
+    return this.request<DishPublic>(`/dishes/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  updateDishAdmin(restaurantId: string, dishId: string, data: Partial<DishPublic>) {
+    return this.request<DishPublic>(`/dishes/${restaurantId}/${dishId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  deleteDishAdmin(restaurantId: string, dishId: string) {
+    return this.request<{ deleted: boolean }>(`/dishes/${restaurantId}/${dishId}`, {
+      method: 'DELETE',
+    })
+  }
+
+  // Dashboard CRUD - Categories
+  getCategoriesAdmin(restaurantId: string) {
+    return this.request<CategoryPublic[]>(`/categories/${restaurantId}`)
+  }
+
+  createCategoryAdmin(restaurantId: string, data: Partial<CategoryPublic>) {
+    return this.request<CategoryPublic>(`/categories/${restaurantId}`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  }
+
+  updateCategoryAdmin(restaurantId: string, categoryId: string, data: Partial<CategoryPublic>) {
+    return this.request<CategoryPublic>(`/categories/${restaurantId}/${categoryId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    })
+  }
+
+  deleteCategoryAdmin(restaurantId: string, categoryId: string) {
+    return this.request<{ deleted: boolean }>(`/categories/${restaurantId}/${categoryId}`, {
+      method: 'DELETE',
+    })
+  }
+
   // AI
   generateDescription(restaurantId: string, dishName: string, ingredients?: string) {
     return this.request<{ description: string }>(`/ai/${restaurantId}/description`, {
@@ -121,6 +171,19 @@ class ApiClient {
     })
     if (!res.ok) throw new Error('Upload failed')
     return res.json() as Promise<{ url: string }>
+  }
+
+  async uploadModel(restaurantId: string, file: File) {
+    const form = new FormData()
+    form.append('model', file)
+    const token = this.getToken()
+    const res = await fetch(`${API_URL}/uploads/${restaurantId}/model`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    })
+    if (!res.ok) throw new Error('Model upload failed')
+    return res.json() as Promise<{ url: string; key: string; size: number }>
   }
 
   generateQR(restaurantId: string) {
@@ -176,6 +239,10 @@ export interface DishPublic {
   prepTime?: string
   featured: boolean
   categoryId: { _id: string; name: string; slug: string }
+  width?: number
+  height?: number
+  depth?: number
+  unit?: string
 }
 
 export interface TrackEvent {

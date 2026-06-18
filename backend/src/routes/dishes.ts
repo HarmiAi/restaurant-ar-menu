@@ -21,6 +21,10 @@ const dishSchema = z.object({
   featured: z.boolean().optional(),
   isAvailable: z.boolean().optional(),
   tags: z.array(z.string()).optional(),
+  width: z.number().optional(),
+  height: z.number().optional(),
+  depth: z.number().optional(),
+  unit: z.enum(['cm', 'in']).optional(),
 })
 
 // Public menu dishes for tenant

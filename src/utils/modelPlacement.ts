@@ -48,6 +48,10 @@ export function clampFoodScale(scale: number) {
 }
 
 export function getRealisticPlateDiameter(item: FoodItem) {
+  if (item.width && item.width > 0) {
+    const factor = item.unit === 'in' ? 0.0254 : 0.01
+    return item.width * factor
+  }
   return realisticDiameterByType[item.modelType] ?? 0.22
 }
 

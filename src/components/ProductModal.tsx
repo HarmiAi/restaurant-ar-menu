@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Clock, Flame, Eye, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -13,6 +14,14 @@ export default function ProductModal({ basePath = '' }: ProductModalProps) {
   const setSelectedItem = useStore((s) => s.setSelectedItem)
   const config = useStore((s) => s.config)
   const addToCart = useStore((s) => s.addToCart)
+
+  const menu = useStore((s) => s.menu)
+  const recommendations = useMemo(() => {
+    if (!selectedItem) return []
+    return menu
+      .filter((item) => item.id !== selectedItem.id && item.category !== selectedItem.category)
+      .slice(0, 2)
+  }, [selectedItem, menu])
 
   return (
     <AnimatePresence>
@@ -100,6 +109,40 @@ export default function ProductModal({ basePath = '' }: ProductModalProps) {
                   Add to Order
                 </button>
               </div>
+
+              {recommendations.length > 0 && (
+                <div className="mt-6 border-t border-white/5 pt-6">
+                  <h4 className="text-xs uppercase tracking-widest text-[var(--color-gold)] mb-3">
+                    Customers also order
+                  </h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    {recommendations.map((recItem) => (
+                      <div
+                        key={recItem.id}
+                        className="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5"
+                      >
+                        <img
+                          src={recItem.image}
+                          alt={recItem.name}
+                          className="h-10 w-10 rounded-lg object-cover shrink-0"
+                        />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-white truncate">{recItem.name}</p>
+                          <p className="text-[10px] text-[var(--color-gold-light)] font-semibold">
+                            {config.currency}{recItem.price}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => addToCart(recItem)}
+                          className="p-1 rounded bg-[var(--color-gold)]/10 text-[var(--color-gold-light)] hover:bg-[var(--color-gold)] hover:text-black transition-colors shrink-0"
+                        >
+                          <Plus size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         </>

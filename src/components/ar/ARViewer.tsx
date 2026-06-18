@@ -1,7 +1,7 @@
 import { Suspense, useCallback, useRef, useState, useEffect, type TouchEvent } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { XR } from '@react-three/xr'
-import { Maximize2, Move3D, RotateCcw, Smartphone } from 'lucide-react'
+import { Maximize2, Move3D, RotateCcw, Smartphone, Camera, Share2 } from 'lucide-react'
 import { useARSession } from '../../hooks/useARSession'
 import ARScene from './ARScene'
 import ARErrorBoundary from './ARErrorBoundary'
@@ -53,6 +53,53 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
   const [arStatus, setArStatus] = useState<'not-presenting' | 'session-started' | 'object-placed' | 'failed'>('not-presenting')
   const [supportState, setSupportState] = useState<'checking' | 'supported' | 'unsupported'>('checking')
   const [loading, setLoading] = useState(true)
+
+  const handleCapture = async () => {
+    const mv = modelViewerRef.current
+    if (!mv) return
+
+    try {
+      const dataUrl = mv.toDataURL('image/png')
+      const res = await fetch(dataUrl)
+      const blob = await res.blob()
+      const file = new File([blob], 'ar-preview.png', { type: 'image/png' })
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `My AR ${item.name}`,
+          text: `Check out this ${item.name} in AR!`,
+        })
+      } else {
+        const a = document.createElement('a')
+        a.href = dataUrl
+        a.download = `ar-${item.name.toLowerCase().replace(/\s+/g, '-')}.png`
+        a.click()
+      }
+    } catch (err) {
+      console.error('Failed to capture AR screenshot:', err)
+      setError('Could not capture screenshot. Please try again.')
+    }
+  }
+
+  const handleShareUrl = async () => {
+    try {
+      const shareUrl = window.location.href
+      if (navigator.share) {
+        await navigator.share({
+          title: item.name,
+          text: `Check out this ${item.name} in AR!`,
+          url: shareUrl,
+        })
+      } else {
+        await navigator.clipboard.writeText(shareUrl)
+        setError('Link copied to clipboard!')
+        setTimeout(() => setError(''), 3000)
+      }
+    } catch (err) {
+      console.error('Failed to share URL:', err)
+    }
+  }
 
   useEffect(() => {
     const mv = modelViewerRef.current
@@ -164,6 +211,25 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
   return (
     <div className="relative h-full min-h-[55dvh] w-full overflow-hidden bg-[#0a0a0f]">
       {loading && <Loader />}
+
+      {!loading && (
+        <div className="absolute right-4 top-16 z-20 flex flex-col gap-3">
+          <button
+            onClick={handleCapture}
+            className="pointer-events-auto p-3 rounded-full bg-black/60 border border-white/10 text-white/80 hover:text-white hover:bg-black/80 transition-all shadow-lg active:scale-95 flex items-center justify-center"
+            title="Capture AR Screenshot"
+          >
+            <Camera size={18} />
+          </button>
+          <button
+            onClick={handleShareUrl}
+            className="pointer-events-auto p-3 rounded-full bg-black/60 border border-white/10 text-white/80 hover:text-white hover:bg-black/80 transition-all shadow-lg active:scale-95 flex items-center justify-center"
+            title="Share AR Preview"
+          >
+            <Share2 size={18} />
+          </button>
+        </div>
+      )}
 
       <model-viewer
         ref={modelViewerRef}

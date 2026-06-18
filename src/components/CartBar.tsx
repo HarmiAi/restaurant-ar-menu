@@ -18,7 +18,10 @@ export default function CartBar({ tableNumbersEnabled, whatsappNumber }: CartBar
   const removeFromCart = useStore((s) => s.removeFromCart)
   const clearCart = useStore((s) => s.clearCart)
 
-  const [tableNumber, setTableNumber] = useState('')
+  const [tableNumber, setTableNumber] = useState(() => {
+    return sessionStorage.getItem('restaurant_table_number') || ''
+  })
+  const [customerName, setCustomerName] = useState('')
   const [orderError, setOrderError] = useState('')
   const total = cart.reduce((sum, { item, quantity }) => sum + item.price * quantity, 0)
 
@@ -29,6 +32,11 @@ export default function CartBar({ tableNumbersEnabled, whatsappNumber }: CartBar
     if (cart.length === 0) return
     setOrderError('')
 
+    if (!customerName.trim()) {
+      setOrderError('Please enter your name to complete the order.')
+      return
+    }
+
     if (!hasValidPhone) {
       setOrderError('WhatsApp number set nathi. Dashboard → Settings ma number add karo (e.g. 919876543210)')
       return
@@ -37,7 +45,8 @@ export default function CartBar({ tableNumbersEnabled, whatsappNumber }: CartBar
     const url = buildWhatsAppOrderUrl(
       cart,
       config,
-      tableNumbersEnabled ? tableNumber : undefined,
+      tableNumber.trim() || undefined,
+      customerName.trim(),
       phone,
     )
 
@@ -134,17 +143,38 @@ export default function CartBar({ tableNumbersEnabled, whatsappNumber }: CartBar
                   </div>
                 )}
 
-                {tableNumbersEnabled && (
-                  <label className="block">
-                    <span className="text-xs text-white/40">Table Number</span>
-                    <input
-                      type="text"
-                      value={tableNumber}
-                      onChange={(e) => setTableNumber(e.target.value)}
-                      placeholder="e.g. 12"
-                      className="mt-1 w-full rounded-xl bg-white/5 border border-white/10 px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]/40"
-                    />
-                  </label>
+                <label className="block">
+                  <span className="text-xs text-white/40">Your Name</span>
+                  <input
+                    type="text"
+                    value={customerName}
+                    onChange={(e) => setCustomerName(e.target.value)}
+                    placeholder="e.g. John"
+                    className="mt-1 w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]/40"
+                    required
+                  />
+                </label>
+
+                {tableNumber ? (
+                  <div className="flex items-center justify-between rounded-xl bg-[var(--color-gold)]/5 border border-[var(--color-gold)]/20 px-4 py-3">
+                    <span className="text-xs text-white/40">Location</span>
+                    <span className="text-sm font-semibold text-[var(--color-gold-light)]">
+                      📍 Table {tableNumber}
+                    </span>
+                  </div>
+                ) : (
+                  tableNumbersEnabled && (
+                    <label className="block">
+                      <span className="text-xs text-white/40">Table Number</span>
+                      <input
+                        type="text"
+                        value={tableNumber}
+                        onChange={(e) => setTableNumber(e.target.value)}
+                        placeholder="e.g. 12"
+                        className="mt-1 w-full rounded-xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-[var(--color-gold)]/40"
+                      />
+                    </label>
+                  )
                 )}
 
                 <div className="flex justify-between items-center">
