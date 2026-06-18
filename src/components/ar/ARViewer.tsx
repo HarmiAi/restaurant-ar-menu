@@ -61,22 +61,40 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
     const handleLoad = () => {
       setLoading(false)
       try {
-        const box = mv.getBoundingBox()
-        const size = box.size
-        const center = box.center
+        const size = mv.getDimensions()
+        const center = mv.getBoundingBoxCenter()
 
-        // Align origin/pivot to bottom center by setting camera-target to center of bounds
-        mv.cameraTarget = `${center.x}m ${center.y}m ${center.z}m`
-        
-        // Adjust scale based on realistic food footprint
-        const footprint = Math.max(size.x, size.z)
-        if (footprint > 0) {
-          const targetDiameter = getRealisticPlateDiameter(item)
-          const scaleFactor = targetDiameter / footprint
-          mv.scale = `${scaleFactor} ${scaleFactor} ${scaleFactor}`
+        if (size && center) {
+          // Calculate bottom Y offset to rest the model exactly at Y = 0
+          const offsetY = -(center.y - size.y / 2)
+
+          // Translate the model group in Three.js so its bottom aligns to Y=0
+          const sceneSymbol = Object.getOwnPropertySymbols(mv).find(
+            (s) => s.description === 'scene'
+          )
+          const scene = sceneSymbol ? mv[sceneSymbol] : null
+          if (scene) {
+            const modelGroup = scene.children.find(
+              (child: any) => child.type === 'Group' || child.type === 'Object3D'
+            )
+            if (modelGroup) {
+              modelGroup.position.y = offsetY
+              modelGroup.updateMatrix()
+            }
+          }
+
+          // Adjust scale based on realistic food footprint
+          const footprint = Math.max(size.x, size.z)
+          if (footprint > 0) {
+            const targetDiameter = getRealisticPlateDiameter(item)
+            const scaleFactor = targetDiameter / footprint
+            mv.scale = `${scaleFactor} ${scaleFactor} ${scaleFactor}`
+          }
+
+          // Center of bounds has shifted due to vertical translation. The new Y center is size.y / 2.
+          mv.cameraTarget = `${center.x}m ${size.y / 2}m ${center.z}m`
+          mv.updateFraming()
         }
-        
-        mv.updateFraming()
       } catch (err) {
         console.error('Error auto-adjusting model layout:', err)
       }
@@ -140,19 +158,6 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
     }
   }, [item, onPlaced])
 
-  const triggerAR = () => {
-    setError('')
-    const mv = modelViewerRef.current
-    if (mv) {
-      try {
-        mv.activateAR()
-      } catch (err) {
-        setError('Could not activate AR. Please try again.')
-      }
-    }
-  }
-
-  const iosSrc = item.modelUrl?.replace(/\.glb$/i, '.usdz')
   const isPresenting = arStatus === 'session-started' || arStatus === 'object-placed'
   const placed = arStatus === 'object-placed'
 
@@ -163,18 +168,27 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
       <model-viewer
         ref={modelViewerRef}
         src={item.modelUrl}
-        ios-src={iosSrc}
         alt={`3D model of ${item.name}`}
         ar
-        ar-modes="webxr scene-viewer"
+        ar-modes="webxr scene-viewer quick-look"
         ar-scale="fixed"
         ar-placement="floor"
         camera-controls
         shadow-intensity="1"
         environment-image="neutral"
-        style={{ width: '100%', height: '100%', outline: 'none' }}
+        style={{ width: '100%', height: '100%', outline: 'none', position: 'relative' }}
       >
-        <button slot="ar-button" id="ar-button" style={{ display: 'none' }}></button>
+        {supportState !== 'unsupported' && (
+          <button
+            slot="ar-button"
+            id="ar-button"
+            disabled={loading}
+            className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-gold-dark)] to-[var(--color-gold)] py-4 text-base font-bold text-black shadow-xl transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 pointer-events-auto"
+          >
+            <Smartphone size={18} />
+            {loading ? 'Preparing 3D model...' : 'View in AR'}
+          </button>
+        )}
       </model-viewer>
 
       {!isPresenting && !loading && (
@@ -198,19 +212,8 @@ function ModelViewerAR({ item, onPlaced }: ARViewerProps) {
       )}
 
       <div className="pointer-events-none absolute bottom-4 left-4 right-4 z-10 flex flex-col gap-2">
-        {!isPresenting && supportState !== 'unsupported' && (
-          <button
-            onClick={triggerAR}
-            disabled={supportState === 'checking' || loading}
-            className="pointer-events-auto flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[var(--color-gold-dark)] to-[var(--color-gold)] py-4 text-base font-bold text-black shadow-xl transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-60"
-          >
-            <Smartphone size={18} />
-            {supportState === 'checking' ? 'Checking AR Support...' : 'View in AR'}
-          </button>
-        )}
-
         {!isPresenting && supportState === 'unsupported' && (
-          <div className="rounded-lg border border-white/10 bg-black/50 p-3 text-center backdrop-blur-sm">
+          <div className="rounded-lg border border-white/10 bg-black/50 p-3 text-center backdrop-blur-sm pointer-events-auto">
             <p className="text-xs text-white/60">AR is not supported on this device/browser. Try on Android Chrome or iOS Safari.</p>
           </div>
         )}
